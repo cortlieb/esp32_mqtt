@@ -1,13 +1,12 @@
-#include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-const char *ssid = "Villanetz";
-const char *password = "Kellerbad100%";
-const char *mqttServer = "192.168.11.58";
+const char *ssid = "home";
+const char *password = "???";
+const char *mqttServer = "192.168.1.5";
 const int mqttPort = 1883;
-const char *mqttUser = "cortlieb";
-const char *mqttPassword = "zV6N6im$qN%NeeRo";
+const char *mqttUser = "mqtt";
+const char *mqttPassword = "???";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -38,22 +37,10 @@ void setup()
 			delay(2000);
 		}
 	}
-	client.publish("esp32/status", "online");
+	client.publish("esp32/test", "Hello from ESP32");
 }
 
 void loop()
 {
-	static int fuellstand = 0;
-	char buf[5];
-
-	sprintf(buf, "%d", fuellstand);
-	client.publish("esp32/fuellstand", buf);
 	client.loop();
-	delay(5000);
-
-	fuellstand++;
-	if (fuellstand > 1000)
-	{
-		fuellstand = 0;
-	}
 }
