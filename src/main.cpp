@@ -7,11 +7,9 @@
    */
 
 #include <Arduino.h>
-#include <WiFi.h>
+#include "ow-wifi.h"
 #include <PubSubClient.h>
 
-const char *ssid = "Villanetz";
-const char *password = "Kellerbad100%";
 const char *mqttServer = "192.168.11.58";
 const int mqttPort = 1883;
 const char *mqttUser = "cortlieb";
@@ -22,29 +20,26 @@ const float BARREL_SENSOR_HEIGHT = 9.25;
 
 int calcLiter();
 
-WiFiClient espClient;
-PubSubClient client(espClient);
-
 // TODO. mit PIN 6 und 7 komische Effekte (Download geht nicht, Fehlermeldungen wenn angeschlossen)
 //--> dokumentieren
 const int TRIGGER = 15;
 const int ECHO = 2;
 
+// PubSubClient client(espClient);
+PubSubClient client;
+
 void setup()
 {
+	WiFiClient espWifiClient;
+
 	Serial.begin(115200);
 
 	pinMode(TRIGGER, OUTPUT);
 	pinMode(ECHO, INPUT);
 
-	WiFi.begin(ssid, password);
-	while (WiFi.status() != WL_CONNECTED)
-	{
-		delay(500);
-		Serial.println("Connecting to WiFi..");
-	}
-	Serial.println("Connected to the WiFi network");
+	espWifiClient = initWiFi();
 
+	client.setClient(espWifiClient);
 	client.setServer(mqttServer, mqttPort);
 	while (!client.connected())
 	{
@@ -60,7 +55,8 @@ void setup()
 			delay(2000);
 		}
 	}
-	client.publish("esp32/status", "online");
+	client.publish("esp32/status", "online"); // TODO: Rueckgabewert auswerten, Retainwert = False
+											  // Auswertung: https://pubsubclient.knolleary.net/api#state
 }
 
 void loop()
@@ -72,9 +68,9 @@ void loop()
 	Serial.println(volume);
 
 	sprintf(buf, "%d", volume);
-	client.publish("esp32/fuellstand", buf);
+	client.publish("esp32/fuellstand", buf); // TODO: Rueckgabewert auswerten, Retainwert = False
 	client.loop();
-	delay(5000);
+	delay(60000);
 }
 
 int calcLiter()
@@ -102,16 +98,4 @@ int calcLiter()
 	Serial.println(waterHeight);
 
 	return (int)round(waterHeight * BARREL_CONST);
-
-	// if (entfernung >= 200 || entfernung <= 0)
-	// {
-	// 	entfernung = 0;
-	// }
-	// else
-	// {
-	// 	Liter = 199 - entfernung;
-	// 	Liter = Liter * 84.7457;
-	// }
-
-	// return String(Liter);
 }
