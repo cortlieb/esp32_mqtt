@@ -66,15 +66,26 @@ void setup()
 void loop()
 {
 	int volume = 0;
-	char buf[5];
-	volume = calcLiter();
-	Serial.print(F("Volumen: "));
-	Serial.println(volume);
+	char volumeString[6];
+	static int loopCounter = 6;
 
-	sprintf(buf, "%d", volume);
-	client.publish("esp32/fuellstand", buf);
 	client.loop();
-	delay(5000);
+
+	if (loopCounter > 5)
+	{
+		volume = calcLiter();
+
+		dtostrf(volume, 1, 0, volumeString); // TODO: Funktion verstehen und ggf. optimieren
+		Serial.print(F("Volumen: "));
+		Serial.println(volume);
+		client.publish("esp32/fuellstand", volumeString, false);
+		// Rückgabewert nutzen
+		loopCounter = 0;
+	}
+
+	delay(10000);
+	loopCounter++;
+	Serial.println(loopCounter);
 }
 
 int calcLiter()
