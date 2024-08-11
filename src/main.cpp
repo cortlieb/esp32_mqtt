@@ -49,7 +49,7 @@ void setup()
 	while (!client.connected())
 	{
 		Serial.println("Connecting to MQTT...");
-		if (client.connect("ESP32Client", mqttUser, mqttPassword))
+		if (client.connect("ESP32Client", mqttUser, mqttPassword, "esp32/status", 0, false, "offline"))
 		{
 			Serial.println("connected");
 		}
